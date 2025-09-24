@@ -9,8 +9,9 @@
 // added patch to draft v0.0.1 -> v0.0.2
 // added patch to draft v0.0.1 -> v0.0.2 again 
 // clean draft would be v0.0.2-> v0.0.3 
-// clean draft would be v0.0.2-> v0.0.3 for the secound time plus publish 
+// clean draft would be v0.0.2-> v0.0.3 for the sec
 
 //checking for minor will be added to draft for now 
 //checking for minor will be added to draft of v0.1.0 and i will add the publish label as well
 ///checking for minor will be added to draft of v0.1.0 and i will add the publish label as well did this but it takes the last commit to the next one as well.....
+//checking publish for 0.2.0
