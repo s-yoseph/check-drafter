@@ -12,3 +12,4 @@
 // clean draft would be v0.0.2-> v0.0.3 for the secound time plus publish 
 
 //checking for minor will be added to draft for now 
+//checking for minor will be added to draft of v0.1.0 and i will add the publish label as well
