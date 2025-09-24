@@ -1,8 +1,5 @@
 name: Release Drafter and Publisher
 on:
-  push:
-    branches:
-      - develop
   pull_request:
     types: [opened, reopened, synchronize, closed]
     branches:
