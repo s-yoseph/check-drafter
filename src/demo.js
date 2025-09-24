@@ -17,3 +17,4 @@
 //checking publish for 0.2.0
 
 //checking for major will be added to draft  v0.2.0 increments to v1.0.0
+//checking for major will be added to draft  v0.2.0 increments to v1.0.0 plus publish 
