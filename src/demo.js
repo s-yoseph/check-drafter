@@ -29,3 +29,4 @@
 //minor increment after 2.1.0 will be released added a publish 
 
 //major inrement v2.10->v3.0.0 draft 
+//major incremetn v3.0.0 publish
