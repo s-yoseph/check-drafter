@@ -19,3 +19,4 @@
 //checking for major will be added to draft  v0.2.0 increments to v1.0.0
 //checking for major will be added to draft  v0.2.0 increments to v1.0.0 plus publish 
 // major increment from v1.0.0 to v2.0.0 
+// major increment from v1.0.0 to v2.0.0 plus publish 
