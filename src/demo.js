@@ -13,3 +13,4 @@
 
 //checking for minor will be added to draft for now 
 //checking for minor will be added to draft of v0.1.0 and i will add the publish label as well
+///checking for minor will be added to draft of v0.1.0 and i will add the publish label as well did this but it takes the last commit to the next one as well.....
