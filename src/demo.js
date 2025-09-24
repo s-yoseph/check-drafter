@@ -15,3 +15,5 @@
 //checking for minor will be added to draft of v0.1.0 and i will add the publish label as well
 ///checking for minor will be added to draft of v0.1.0 and i will add the publish label as well did this but it takes the last commit to the next one as well.....
 //checking publish for 0.2.0
+
+//checking for major will be added to draft  v0.2.0 increments to v1.0.0
