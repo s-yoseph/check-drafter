@@ -26,3 +26,4 @@
 //patch increment after major v2.0.0 -> v2.0.1 plus publish
 
 //minor increment after  v2.0.1 -> v2.1.0
+//minor increment after 2.1.0 will be released added a publish 
