@@ -3,11 +3,11 @@ name: Release Drafter and Publisher
 on:
   push:
     branches:
-      - main
+      - develop
   pull_request:
     types: [opened, reopened, synchronize, closed]
     branches:
-      - main
+      - develop
 
 permissions:
   contents: write
@@ -56,4 +56,5 @@ jobs:
             });
 
             console.log(`✅ Draft release "${draft.tag_name}" published!`);
+
 
