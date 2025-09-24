@@ -23,3 +23,4 @@
 // major increment from v1.0.0 to v2.0.0 plus publish - same checking if the 2 drafts will be published it created 2 draft called v2.0.0
 
 //minor increment after major v2.0.0 -> v2.0.1
+//minor increment after major v2.0.0 -> v2.0.1 plus publish
