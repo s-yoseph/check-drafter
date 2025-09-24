@@ -10,3 +10,5 @@
 // added patch to draft v0.0.1 -> v0.0.2 again 
 // clean draft would be v0.0.2-> v0.0.3 
 // clean draft would be v0.0.2-> v0.0.3 for the secound time plus publish 
+
+//checking for minor will be added to draft for now 
