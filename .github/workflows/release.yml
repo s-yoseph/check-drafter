@@ -11,10 +11,11 @@ jobs:
   update_release_draft:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4  # Ensure repo is checked out for config
+      - uses: actions/checkout@v4
       - uses: release-drafter/release-drafter@v6
         with:
           config-name: release-drafter.yml
+          commitish: develop
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   publish_draft:
@@ -23,7 +24,7 @@ jobs:
       github.event.action == 'closed' &&
       github.event.pull_request.merged == true &&
       contains(github.event.pull_request.labels.*.name, 'Publish')
-    needs: update_release_draft  # Ensure update runs first
+    needs: update_release_draft
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
