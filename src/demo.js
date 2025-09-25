@@ -32,3 +32,4 @@
 //major incremetn v3.0.0 publish
 
 //checking if the draft is working now 
+//checking if the draft for major-patch to wil publish 3.0.1
