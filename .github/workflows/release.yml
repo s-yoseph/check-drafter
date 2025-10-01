@@ -7,7 +7,7 @@ on:
   pull_request:
     types: [opened, reopened, synchronize, closed]
     branches:
-      - develop
+      - '**'
 
 permissions:
   contents: write
@@ -58,5 +58,6 @@ jobs:
             });
 
             console.log(`✅ Draft release "${draft.tag_name}" published!`);
+
 
 
