@@ -3,7 +3,7 @@ on:
   pull_request:
     types: [opened, reopened, synchronize, closed]
     branches:
-      - develop
+      - '**'
 permissions:
   contents: write
   pull-requests: write
@@ -57,3 +57,12 @@ jobs:
               core.setFailed(`Failed to publish release: ${error.message}`);
               throw error;
             }
+            await github.rest.repos.updateRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              release_id: draft.id,
+              draft: false
+            });
+
+            console.log(`✅ Draft release "${draft.tag_name}" published!`);
+
