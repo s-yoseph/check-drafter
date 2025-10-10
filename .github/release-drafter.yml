@@ -1,5 +1,5 @@
-name-template: 'v$RESOLVED_VERSION'
-tag-template: 'v$RESOLVED_VERSION'
+tag-template: 'v$NEXT_PATCH$PRERELEASE_SUFFIX-$DATE'
+name-template: 'v$NEXT_PATCH$PRERELEASE_SUFFIX ($DATE)'
 
 template: |
   # What's Changed
@@ -48,3 +48,4 @@ version-resolver:
 
 exclude-labels:
   - 'Skip-Changelog'
+
