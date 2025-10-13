@@ -2,27 +2,27 @@ name-template: 'v$RESOLVED_VERSION'
 tag-template: 'v$RESOLVED_VERSION'
 
 template: |
-  # 🚀 What's Changed
+  # What's Changed
 
   $CHANGES
 
   **Full Changelog**: https://github.com/$OWNER/$REPOSITORY/compare/$PREVIOUS_TAG...v$RESOLVED_VERSION
 
 categories:
-  - title: '⚠️ Breaking Changes'
+  - title: 'Breaking Changes'
     labels:
       - 'Major'
-  - title: '✨ Enhancements'
+  - title: 'Enhancements'
     labels:
       - 'Enhancement'
       - 'Dev Task'
       - 'Feature'
       - 'Dev Process Optimization'
-  - title: '🐛 Bug Fixes'
+  - title: 'Bug Fixes'
     labels:
       - 'Bug'
       - 'Hot Fix'
-  - title: '🧩 Tasks'
+  - title: 'Tasks'
     labels:
       - 'Task'
 
@@ -48,9 +48,3 @@ version-resolver:
 
 exclude-labels:
   - 'Skip-Changelog'
-
-# ✅ NEW: only include unreleased PRs on this branch
-filter-by-commitish: true
-
-# ✅ NEW: automatically bump even if last tag was a pre-release
-include-pre-releases: true
