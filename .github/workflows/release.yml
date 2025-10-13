@@ -1,49 +1,68 @@
 # =========================================================
 # 🧩 Release Drafter and Publisher Workflow
 # Supports both stable and pre-release publishing
-# Triggered when PRs are opened, updated, or merged into `develop`
 # =========================================================
 
 name: Release Drafter and Publisher
 
 on:
+  # Allow manual trigger
+  workflow_dispatch:
+
+  # Automatically trigger when PRs target 'develop'
   pull_request:
-    # Trigger this workflow when PRs are opened, reopened,
-    # synchronized (updated), or closed (merged)
     types: [opened, reopened, synchronize, closed]
     branches:
-      - develop  # Only runs for PRs targeting the 'develop' branch
+      - develop
+
+  # Optional: Also run when something is pushed to develop
+  push:
+    branches:
+      - develop
 
 permissions:
-  contents: write         # Needed to publish releases and push tags
-  pull-requests: write    # Needed to update PRs (labels, etc.)
+  contents: write
+  pull-requests: write
 
 jobs:
   # ---------------------------------------------------------
+  # 🧾 Debug trigger (helps verify if workflow runs)
+  # ---------------------------------------------------------
+  debug_trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Debug event info
+        run: |
+          echo "✅ Workflow triggered by: ${{ github.event_name }}"
+          echo "🔀 Event action: ${{ github.event.action }}"
+          echo "🌿 Ref: ${{ github.ref }}"
+          echo "🧱 Base ref: ${{ github.base_ref }}"
+          echo "🎯 Target branch: develop"
+
+  # ---------------------------------------------------------
   # 🧱 1️⃣ Update Release Draft
-  # This job updates the draft release notes using Release Drafter
-  # whenever a PR is opened or merged into develop
   # ---------------------------------------------------------
   update_release_draft:
     runs-on: ubuntu-latest
+    if: github.event_name != 'push' || github.ref == 'refs/heads/develop'
     steps:
-      # Checkout your repository so Release Drafter can access the code
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      # Run the Release Drafter action to create or update the draft
-      - uses: release-drafter/release-drafter@v6
+      - name: Run Release Drafter
+        uses: release-drafter/release-drafter@v6
         with:
-          config-name: release-drafter.yml   # Points to your config file
-          commitish: develop                 # Base branch for the release notes
+          config-name: release-drafter.yml
+          commitish: develop
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Auth token for API calls
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   # ---------------------------------------------------------
   # 🚀 2️⃣ Publish Draft Release
-  # This runs *after* a PR is merged into develop, if it has
-  # a label "Publish" (for stable) or "Pre-release" (for prerelease)
   # ---------------------------------------------------------
   publish_draft:
+    runs-on: ubuntu-latest
+    needs: update_release_draft
     if: >
       github.event_name == 'pull_request' &&
       github.event.action == 'closed' &&
@@ -52,55 +71,37 @@ jobs:
         contains(github.event.pull_request.labels.*.name, 'Publish') ||
         contains(github.event.pull_request.labels.*.name, 'Pre-release')
       )
-      # 👆 Runs only when:
-      # - It's a PR event
-      # - The PR is merged
-      # - The PR has either label: "Publish" or "Pre-release"
-
-    needs: update_release_draft  # Wait until the draft update is done
-    runs-on: ubuntu-latest
-
     steps:
-      # Step 1: Checkout the repository
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Step 2: Publish the draft release
       - name: Publish draft release
         uses: actions/github-script@v7
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           script: |
-            // Import repo context (owner, repo)
             const { owner, repo } = context.repo;
-
-            // Fetch all releases
             const releases = await github.rest.repos.listReleases({ owner, repo });
-
-            // Find the most recent *draft* release
             const draft = releases.data.find(r => r.draft);
 
-            // If no draft release is found, fail the workflow
             if (!draft) {
               core.setFailed("❌ No draft release found to publish.");
               return;
             }
 
-            // Get PR labels (used to determine if it's pre-release or stable)
             const labels = context.payload.pull_request.labels.map(l => l.name);
             const isPre = labels.includes('Pre-release');
 
-            console.log(`📦 Found draft release: ${draft.tag_name}`);
+            console.log(`📦 Found draft: ${draft.tag_name}`);
             console.log(`🔖 Publishing as ${isPre ? 'pre-release' : 'stable'}...`);
 
-            // Update the draft release to published
             await github.rest.repos.updateRelease({
               owner,
               repo,
               release_id: draft.id,
               draft: false,
-              prerelease: isPre, // true for Pre-release, false for Stable
+              prerelease: isPre,
             });
 
-            console.log(`✅ Successfully published ${isPre ? 'pre-release' : 'stable'} release: ${draft.tag_name}`);
+            console.log(`✅ Published ${isPre ? 'pre-release' : 'stable'} release: ${draft.tag_name}`);
