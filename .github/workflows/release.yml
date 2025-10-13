@@ -1,22 +1,14 @@
 # =========================================================
-# 🧩 Release Drafter and Publisher Workflow
+# 🧩 Release Drafter and Publisher Workflow (Enhanced)
 # Supports both stable and pre-release publishing
 # =========================================================
 
 name: Release Drafter and Publisher
 
 on:
-  # Allow manual trigger
   workflow_dispatch:
-
-  # Automatically trigger when PRs target 'develop'
   pull_request:
     types: [opened, reopened, synchronize, closed]
-    branches:
-      - develop
-
-  # Optional: Also run when something is pushed to develop
-  push:
     branches:
       - develop
 
@@ -26,25 +18,11 @@ permissions:
 
 jobs:
   # ---------------------------------------------------------
-  # 🧾 Debug trigger (helps verify if workflow runs)
-  # ---------------------------------------------------------
-  debug_trigger:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Debug event info
-        run: |
-          echo "✅ Workflow triggered by: ${{ github.event_name }}"
-          echo "🔀 Event action: ${{ github.event.action }}"
-          echo "🌿 Ref: ${{ github.ref }}"
-          echo "🧱 Base ref: ${{ github.base_ref }}"
-          echo "🎯 Target branch: develop"
-
-  # ---------------------------------------------------------
   # 🧱 1️⃣ Update Release Draft
   # ---------------------------------------------------------
   update_release_draft:
     runs-on: ubuntu-latest
-    if: github.event_name != 'push' || github.ref == 'refs/heads/develop'
+    if: github.event.pull_request.merged != true  # skip for merged PRs
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -58,11 +36,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   # ---------------------------------------------------------
-  # 🚀 2️⃣ Publish Draft Release
+  # 🚀 2️⃣ Publish or Pre-Release
   # ---------------------------------------------------------
   publish_draft:
     runs-on: ubuntu-latest
-    needs: update_release_draft
     if: >
       github.event_name == 'pull_request' &&
       github.event.action == 'closed' &&
@@ -75,15 +52,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Publish draft release
+      - name: Publish release
         uses: actions/github-script@v7
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           script: |
             const { owner, repo } = context.repo;
+
+            // Fetch latest releases
             const releases = await github.rest.repos.listReleases({ owner, repo });
-            const draft = releases.data.find(r => r.draft);
+            let draft = releases.data.find(r => r.draft);
 
             if (!draft) {
               core.setFailed("❌ No draft release found to publish.");
@@ -92,16 +71,45 @@ jobs:
 
             const labels = context.payload.pull_request.labels.map(l => l.name);
             const isPre = labels.includes('Pre-release');
+            const isStable = labels.includes('Publish');
 
             console.log(`📦 Found draft: ${draft.tag_name}`);
-            console.log(`🔖 Publishing as ${isPre ? 'pre-release' : 'stable'}...`);
+            console.log(`🔖 Marking as ${isPre ? 'pre-release' : 'stable'}...`);
 
+            // Auto-add -alpha.X tag suffix if pre-release
+            let newTag = draft.tag_name;
+            if (isPre) {
+              const preTagBase = draft.tag_name.replace(/-alpha\.\d+$/, '');
+              const existingPreReleases = releases.data.filter(r =>
+                r.tag_name.startsWith(preTagBase + '-alpha')
+              );
+              const nextAlpha = existingPreReleases.length + 1;
+              newTag = `${preTagBase}-alpha.${nextAlpha}`;
+              console.log(`🏷️ New pre-release tag: ${newTag}`);
+            }
+
+            // Update release info
             await github.rest.repos.updateRelease({
               owner,
               repo,
               release_id: draft.id,
+              tag_name: newTag,
               draft: false,
               prerelease: isPre,
             });
 
-            console.log(`✅ Published ${isPre ? 'pre-release' : 'stable'} release: ${draft.tag_name}`);
+            console.log(`✅ Successfully published ${isPre ? 'pre-release' : 'stable'} release: ${newTag}`);
+
+      - name: Delete duplicate drafts (cleanup)
+        uses: actions/github-script@v7
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const releases = await github.rest.repos.listReleases({ owner, repo });
+            const drafts = releases.data.filter(r => r.draft);
+            for (const d of drafts.slice(1)) {
+              await github.rest.repos.deleteRelease({ owner, repo, release_id: d.id });
+              console.log(`🧹 Deleted duplicate draft: ${d.name || d.tag_name}`);
+            }
