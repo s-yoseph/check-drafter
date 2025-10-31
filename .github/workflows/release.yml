@@ -53,10 +53,10 @@ jobs:
                 repo: context.repo.repo,
                 release_id: draft.id,
                 draft: false,
-                prerelease: false,
-                name: "develop" // 👈 This sets the visible release name
+                prerelease: true,
+                name: `${draft.tag_name} - develop`
               });
-              console.log(`✅ Draft release "${draft.tag_name}" published successfully as "develop"!`);
+              console.log(`✅ Draft release "${draft.tag_name}" published successfully as "${draft.tag_name} - develop"!`);
             } catch (error) {
               core.setFailed(`Failed to publish release: ${error.message}`);
               throw error;
