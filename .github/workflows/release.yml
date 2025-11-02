@@ -4,11 +4,9 @@ on:
     types: [opened, reopened, synchronize, closed]
     branches:
       - develop
-
 permissions:
   contents: write
   pull-requests: write
-
 jobs:
   update_release_draft:
     runs-on: ubuntu-latest
@@ -20,7 +18,6 @@ jobs:
           commitish: develop
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
   publish_draft:
     if: >
       github.event_name == 'pull_request' &&
@@ -32,46 +29,31 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
       - name: Publish latest draft release
-        id: publish
         uses: actions/github-script@v7
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           script: |
-            const { owner, repo } = context.repo;
-            const releases = await github.rest.repos.listReleases({ owner, repo });
-            const draft = releases.data.find(r => r.draft);
-
-            if (!draft) {
-              core.setFailed("❌ No draft release found to publish.");
-              return;
-            }
-
-            const tagExists = releases.data.some(r => !r.draft && r.tag_name === draft.tag_name);
-            if (tagExists) {
-              console.log(`⚠️ Release with tag "${draft.tag_name}" already exists. Skipping publish.`);
-              return;
-            }
-
-            await github.rest.repos.updateRelease({
-              owner,
-              repo,
-              release_id: draft.id,
-              draft: false,
-              prerelease: true,
-              name: draft.name,
+            const releases = await github.rest.repos.listReleases({
+              owner: context.repo.owner,
+              repo: context.repo.repo
             });
-
-            console.log(`✅ Published "${draft.name}" successfully!`);
-            core.setOutput("published", "true");
-
-      - name: Trigger new draft after publish
-        if: steps.publish.outputs.published == 'true'
-        uses: release-drafter/release-drafter@v6
-        with:
-          config-name: release-drafter.yml
-          commitish: develop
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            const draft = releases.data.find(r => r.draft);
+            if (!draft) {
+              core.setFailed("No draft release found to publish.");
+              return;
+            }
+            try {
+              await github.rest.repos.updateRelease({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                release_id: draft.id,
+                draft: false,
+                prerelease: false
+              });
+              console.log(`✅ Draft release "${draft.tag_name}" published successfully!`);
+            } catch (error) {
+              core.setFailed(`Failed to publish release: ${error.message}`);
+              throw error;
+            }
